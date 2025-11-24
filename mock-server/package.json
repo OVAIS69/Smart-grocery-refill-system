@@ -1,0 +1,16 @@
+{
+  "name": "smart-grocery-mock-server",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Mock API server for Smart Grocery Refill System",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5"
+  }
+}
+
