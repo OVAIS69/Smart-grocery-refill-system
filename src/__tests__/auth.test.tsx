@@ -1,4 +1,5 @@
 import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useAuthStore } from '@/store/authStore';
@@ -33,9 +34,7 @@ describe('Authentication', () => {
   });
 
   it('should show validation errors for empty form', async () => {
-    const { user } = await import('@testing-library/user-event');
-    const userEvent = user.setup();
-
+    const user = userEvent.setup();
     render(
       <TestWrapper>
         <Login />
@@ -43,7 +42,7 @@ describe('Authentication', () => {
     );
 
     const submitButton = screen.getByRole('button', { name: /sign in/i });
-    await userEvent.click(submitButton);
+    await user.click(submitButton);
 
     await waitFor(() => {
       expect(screen.getByText(/invalid email address/i)).toBeInTheDocument();

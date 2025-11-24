@@ -38,7 +38,7 @@ export const Products = () => {
 
   const { lowStockCount } = useAutoRefill({
     enabled: autoRefillEnabled,
-    onLowStockDetected: (productId, productName) => {
+    onLowStockDetected: (_productId, productName) => {
       success(`Auto-refill order created for ${productName}`);
     },
   });
@@ -182,12 +182,13 @@ export const Products = () => {
         size="lg"
       >
         <ProductForm
-          product={editingProduct}
+          product={editingProduct ?? undefined}
           onSuccess={() => {
+            const wasEditing = Boolean(editingProduct);
             setIsCreateModalOpen(false);
             setEditingProduct(null);
             refetch();
-            success(editingProduct ? 'Product updated' : 'Product created');
+            success(wasEditing ? 'Product updated' : 'Product created');
           }}
           onCancel={() => {
             setIsCreateModalOpen(false);
