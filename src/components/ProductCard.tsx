@@ -22,6 +22,17 @@ export const ProductCard = ({
 }: ProductCardProps) => {
   const lowStock = isLowStock(product.stock, product.threshold);
 
+  const getProductImage = (product: Product) => {
+    if (product.image) return product.image;
+    // Fallback to placeholder images based on category
+    const categoryImages: Record<string, string> = {
+      'Grocery': 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=400&h=300&fit=crop',
+      'Personal Care': 'https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=400&h=300&fit=crop',
+      'Dairy': 'https://images.unsplash.com/photo-1550583724-b2692b85b150?w=400&h=300&fit=crop',
+    };
+    return categoryImages[product.category] || 'https://images.unsplash.com/photo-1556911220-bff31c812dba?w=400&h=300&fit=crop';
+  };
+
   return (
     <div
       className={`card relative overflow-hidden transition duration-300 hover:-translate-y-1 ${
@@ -30,15 +41,36 @@ export const ProductCard = ({
     >
       <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/0 to-primary-50/40" aria-hidden />
       <div className="relative">
-        <div className="flex items-start justify-between">
-          <div>
-            <span className="pill">{product.category || 'General'}</span>
-            <h3 className="mt-2 text-xl font-semibold text-neutral-900">{product.name}</h3>
+        {/* Product Image */}
+        <div className="mb-4 -mx-6 -mt-6">
+          <div className="relative h-48 w-full overflow-hidden rounded-t-2xl bg-gradient-to-br from-primary-100 to-primary-50">
+            <img
+              src={getProductImage(product)}
+              alt={product.name}
+              className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = 'https://images.unsplash.com/photo-1556911220-bff31c812dba?w=400&h=300&fit=crop';
+              }}
+            />
+            <div className="absolute top-3 left-3">
+              <span className="pill bg-white/90 backdrop-blur-sm">{product.category || 'General'}</span>
+            </div>
+            {lowStock && (
+              <div className="absolute top-3 right-3">
+                <Badge variant="danger">Low Stock</Badge>
+              </div>
+            )}
           </div>
-          <div className="text-right">
-            <p className="text-xs uppercase tracking-wide text-neutral-400">Avg price</p>
+        </div>
+
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            <h3 className="text-xl font-semibold text-neutral-900">{product.name}</h3>
+          </div>
+          <div className="text-right ml-4">
+            <p className="text-xs uppercase tracking-wide text-neutral-400">Price</p>
             <p className="text-2xl font-semibold text-primary-700">{formatCurrency(product.price)}</p>
-            {lowStock && <Badge variant="danger" className="mt-2">Low Stock</Badge>}
           </div>
         </div>
 

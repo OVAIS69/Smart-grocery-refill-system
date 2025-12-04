@@ -19,6 +19,7 @@ export interface Product {
   category: string;
   sku?: string;
   unit?: string;
+  image?: string;
   createdAt?: string;
   updatedAt?: string;
 }
