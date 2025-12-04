@@ -1,29 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
-import {
-  HomeIcon,
-  CubeIcon,
-  ShoppingCartIcon,
-  BellIcon,
-  ChartBarIcon,
-  UserGroupIcon,
-  UserIcon,
-  TruckIcon,
-} from '@heroicons/react/24/outline';
-
-const navigation = [
-  { name: 'Dashboard', href: '/', icon: HomeIcon, roles: ['admin', 'manager'] },
-  { name: 'Supplier Dashboard', href: '/supplier', icon: TruckIcon, roles: ['supplier'] },
-  { name: 'Products', href: '/products', icon: CubeIcon, roles: ['admin', 'manager', 'supplier'] },
-  { name: 'Orders', href: '/orders', icon: ShoppingCartIcon, roles: ['admin', 'manager', 'supplier'] },
-  { name: 'Notifications', href: '/notifications', icon: BellIcon, roles: ['admin', 'manager', 'supplier'] },
-  { name: 'Reports', href: '/reports', icon: ChartBarIcon, roles: ['admin', 'manager'] },
-  { name: 'Admin', href: '/admin', icon: UserGroupIcon, roles: ['admin'] },
-  { name: 'Profile', href: '/profile', icon: UserIcon, roles: ['admin', 'manager', 'supplier'] },
-];
-
-import { Link, useLocation } from 'react-router-dom';
-import { useAuthStore } from '@/store/authStore';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import {
   HomeIcon,
