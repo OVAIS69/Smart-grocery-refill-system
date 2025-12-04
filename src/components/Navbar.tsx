@@ -15,7 +15,11 @@ const navLinks = [
   { label: 'About', to: '/about', roles: ['admin', 'manager', 'supplier'] },
 ];
 
-export const Navbar = () => {
+interface NavbarProps {
+  onMenuClick?: () => void;
+}
+
+export const Navbar = ({ onMenuClick }: NavbarProps) => {
   const { user, logout, hasRole } = useAuthStore();
   const navigate = useNavigate();
   const { data: notifications } = useNotifications();
@@ -87,8 +91,11 @@ export const Navbar = () => {
             Logout
           </button>
           <button
-            className="inline-flex rounded-full p-2 text-white/90 transition hover:bg-white/15 md:hidden"
-            onClick={() => setMenuOpen((prev) => !prev)}
+            className="inline-flex rounded-full p-2 text-slate-600 transition hover:bg-primary-50 lg:hidden"
+            onClick={() => {
+              setMenuOpen((prev) => !prev);
+              onMenuClick?.();
+            }}
             aria-label="Toggle navigation"
           >
             {menuOpen ? <XMarkIcon className="h-6 w-6" /> : <Bars3Icon className="h-6 w-6" />}

@@ -58,18 +58,18 @@ export const SupplierDashboard = () => {
     .slice(0, 5) || [];
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Header */}
-      <div>
-        <p className="text-xs uppercase tracking-[0.4em] text-neutral-400">Supplier Portal</p>
-        <h1 className="mt-2 text-3xl font-semibold text-neutral-900">Fulfillment Dashboard</h1>
-        <p className="mt-2 text-sm text-neutral-500">
+      <div className="card bg-gradient-to-r from-primary-500 to-secondary-500 text-white">
+        <p className="text-xs uppercase tracking-[0.4em] text-white/80">Supplier Portal</p>
+        <h1 className="mt-2 text-3xl font-semibold">Fulfillment Dashboard</h1>
+        <p className="mt-2 text-sm text-white/90">
           Manage orders, track payments, and monitor your supplier performance
         </p>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <StatCard
           title="Total Orders"
           value={stats.totalOrders}
@@ -100,7 +100,7 @@ export const SupplierDashboard = () => {
       </div>
 
       {/* Revenue Overview */}
-      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <div className="card border border-primary-100 bg-gradient-to-br from-primary-50 to-white">
           <div className="flex items-center justify-between">
             <div>

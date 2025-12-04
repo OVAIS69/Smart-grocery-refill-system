@@ -158,7 +158,7 @@ export const Orders = () => {
   ];
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="text-xs uppercase tracking-[0.4em] text-neutral-400">Fulfilment</p>
@@ -189,7 +189,7 @@ export const Orders = () => {
         <Loading />
       ) : (
         <>
-          <div className="grid gap-4 sm:grid-cols-3">
+          <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
             <SummaryCard label="Open orders" value={data?.data.filter((o) => o.status !== 'delivered').length || 0} />
             <SummaryCard label="Deliveries today" value={data?.data.filter((o) => o.status === 'delivered').length || 0} tone="success" />
             <SummaryCard label="Supplier touchpoints" value={data?.data.length || 0} tone="accent" />

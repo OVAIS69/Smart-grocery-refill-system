@@ -38,8 +38,9 @@ export const Dashboard = () => {
   }
 
   return (
-    <div className="space-y-8">
-      <section className="card relative overflow-hidden border-none bg-gradient-to-br from-primary-700 via-primary-600 to-primary-500 text-white shadow-card">
+    <div className="space-y-6">
+      {/* Hero Section */}
+      <section className="card relative overflow-hidden border-none bg-gradient-to-br from-primary-500 via-primary-600 to-secondary-500 text-white shadow-xl">
         <div className="absolute right-0 top-0 hidden h-full w-1/3 bg-white/10 lg:block" aria-hidden />
         <div className="relative">
           <p className="text-sm uppercase tracking-[0.4em] text-white/70">Operational Pulse</p>
@@ -58,7 +59,8 @@ export const Dashboard = () => {
         </div>
       </section>
 
-      <section className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
+      {/* Stats Grid */}
+      <section className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <StatCard
           title="Total Products"
           value={productsData?.total || 0}

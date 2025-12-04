@@ -69,7 +69,7 @@ export const Products = () => {
   const categories = Array.from(new Set(data?.data.map((p) => p.category).filter(Boolean) || []));
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="max-w-2xl">
           <p className="text-xs uppercase tracking-[0.4em] text-neutral-400">Inventory Catalog</p>
@@ -146,7 +146,7 @@ export const Products = () => {
         <Loading />
       ) : (
         <>
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {data?.data.map((product) => (
               <ProductCard
                 key={product.id}
