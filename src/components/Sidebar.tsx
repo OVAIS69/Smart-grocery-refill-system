@@ -1,6 +1,6 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
-import { XMarkIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon, ArrowRightOnRectangleIcon } from '@heroicons/react/24/outline';
 import {
   HomeIcon,
   CubeIcon,
@@ -31,9 +31,18 @@ interface SidebarProps {
 
 export const Sidebar = ({ isOpen = true, onClose, isMobile = false }: SidebarProps) => {
   const location = useLocation();
-  const { hasRole } = useAuthStore();
+  const navigate = useNavigate();
+  const { hasRole, logout } = useAuthStore();
 
   const filteredNav = navigation.filter((item) => hasRole(item.roles));
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+    if (isMobile && onClose) {
+      onClose();
+    }
+  };
 
   const sidebarContent = (
     <div className={`flex flex-col h-full border-r-2 border-primary-100 bg-white/95 backdrop-blur-sm shadow-xl ${
@@ -91,6 +100,17 @@ export const Sidebar = ({ isOpen = true, onClose, isMobile = false }: SidebarPro
           );
         })}
       </nav>
+
+      {/* Logout Button */}
+      <div className="p-4 border-t-2 border-primary-100">
+        <button
+          onClick={handleLogout}
+          className="w-full flex items-center justify-center gap-3 rounded-xl px-4 py-3 text-sm font-medium bg-gradient-to-r from-primary-500 to-primary-600 text-white shadow-lg hover:shadow-xl hover:from-primary-600 hover:to-primary-700 transition-all duration-300"
+        >
+          <ArrowRightOnRectangleIcon className="h-5 w-5" />
+          Logout
+        </button>
+      </div>
     </div>
   );
 

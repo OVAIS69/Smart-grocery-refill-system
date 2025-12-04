@@ -5,15 +5,6 @@ import { useAuthStore } from '@/store/authStore';
 import { useNotifications } from '@/hooks/useNotifications';
 import { Badge } from './Badge';
 
-const navLinks = [
-  { label: 'Dashboard', to: '/', roles: ['admin', 'manager', 'supplier'] },
-  { label: 'Products', to: '/products', roles: ['admin', 'manager', 'supplier'] },
-  { label: 'Orders', to: '/orders', roles: ['admin', 'manager', 'supplier'] },
-  { label: 'Notifications', to: '/notifications', roles: ['admin', 'manager', 'supplier'] },
-  { label: 'Reports', to: '/reports', roles: ['admin', 'manager'] },
-  { label: 'Admin', to: '/admin', roles: ['admin'] },
-  { label: 'About', to: '/about', roles: ['admin', 'manager', 'supplier'] },
-];
 
 interface NavbarProps {
   onMenuClick?: () => void;
@@ -47,19 +38,6 @@ export const Navbar = ({ onMenuClick }: NavbarProps) => {
               <p className="text-lg font-semibold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent">Refill HQ</p>
             </div>
           </Link>
-          <div className="hidden md:flex md:items-center md:space-x-1">
-            {navLinks
-              .filter((item) => hasRole(item.roles))
-              .map((item) => (
-                <Link
-                  key={item.label}
-                  to={item.to}
-                  className="rounded-full px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-primary-50 hover:text-primary-600"
-                >
-                  {item.label}
-                </Link>
-              ))}
-          </div>
         </div>
         <div className="flex items-center gap-3">
           <button
@@ -87,9 +65,6 @@ export const Navbar = ({ onMenuClick }: NavbarProps) => {
               {user.role}
             </Badge>
           </div>
-          <button onClick={handleLogout} className="btn btn-secondary hidden text-sm sm:flex" aria-label="Logout">
-            Logout
-          </button>
           <button
             className="inline-flex rounded-full p-2 text-slate-600 transition hover:bg-primary-50 lg:hidden"
             onClick={() => {
@@ -102,27 +77,6 @@ export const Navbar = ({ onMenuClick }: NavbarProps) => {
           </button>
         </div>
       </div>
-      {menuOpen && (
-        <div className="md:hidden">
-          <div className="space-y-1 bg-white border-t-2 border-primary-100 px-4 py-4 shadow-lg">
-            {navLinks
-              .filter((item) => hasRole(item.roles))
-              .map((item) => (
-                <Link
-                  key={item.label}
-                  to={item.to}
-                  onClick={() => setMenuOpen(false)}
-                  className="block rounded-xl px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-primary-50 hover:text-primary-600"
-                >
-                  {item.label}
-                </Link>
-              ))}
-            <button onClick={handleLogout} className="btn btn-primary w-full mt-2">
-              Logout
-            </button>
-          </div>
-        </div>
-      )}
     </nav>
   );
 };
