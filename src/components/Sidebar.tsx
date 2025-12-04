@@ -31,11 +31,11 @@ export const Sidebar = () => {
   return (
     <aside className="hidden md:flex md:flex-shrink-0" aria-label="Primary navigation">
       <div className="sticky top-6 hidden md:flex">
-        <div className="flex w-64 flex-col rounded-3xl border border-white/70 bg-white/90 p-5 shadow-card backdrop-blur-sm">
-          <div className="mb-6 rounded-2xl border border-primary-100 bg-primary-50/50 p-4">
-            <p className="text-xs font-medium uppercase tracking-wide text-primary-600">Inventory health</p>
-            <p className="mt-1 text-3xl font-semibold text-primary-700">92%</p>
-            <p className="text-xs text-neutral-500">Auto-refill active</p>
+        <div className="flex w-64 flex-col rounded-3xl border border-primary-500/20 bg-dark-800/60 p-5 shadow-glow-green-sm backdrop-blur-xl">
+          <div className="mb-6 rounded-2xl border border-primary-500/30 bg-primary-500/10 p-4 backdrop-blur-sm">
+            <p className="text-xs font-medium uppercase tracking-wide text-primary-400">Inventory health</p>
+            <p className="mt-1 text-3xl font-semibold glow-text">92%</p>
+            <p className="text-xs text-primary-300/60">Auto-refill active</p>
           </div>
           <nav className="flex-1 space-y-1" role="navigation">
             {filteredNav.map((item) => {
@@ -45,16 +45,16 @@ export const Sidebar = () => {
                 <Link
                   key={item.name}
                   to={item.href}
-                  className={`group flex items-center rounded-2xl px-3 py-2 text-sm font-medium transition ${
+                  className={`group flex items-center rounded-2xl px-3 py-2 text-sm font-medium transition-all duration-300 ${
                     isActive
-                      ? 'bg-primary-600 text-white shadow-soft'
-                      : 'text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900'
+                      ? 'bg-primary-600 text-white shadow-glow-green-sm border border-primary-500/50'
+                      : 'text-primary-300/70 hover:bg-primary-500/20 hover:text-primary-400 hover:border hover:border-primary-500/30'
                   }`}
                   aria-current={isActive ? 'page' : undefined}
                 >
                   <Icon
-                    className={`mr-3 h-5 w-5 ${
-                      isActive ? 'text-white' : 'text-neutral-400 group-hover:text-primary-600'
+                    className={`mr-3 h-5 w-5 transition-colors ${
+                      isActive ? 'text-white' : 'text-primary-400/60 group-hover:text-primary-400'
                     }`}
                   />
                   {item.name}

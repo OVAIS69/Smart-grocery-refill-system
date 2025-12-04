@@ -11,16 +11,16 @@ export const Layout = ({ children }: LayoutProps) => {
   const { toasts, removeToast } = useToast();
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-neutral-50 via-white to-primary-50 relative">
-      {/* Blur Background Layers */}
+    <div className="min-h-screen bg-gradient-to-br from-dark-950 via-dark-900 to-dark-800 relative">
+      {/* Animated Glowing Background Layers */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none" aria-hidden>
-        <div className="absolute -top-40 -right-40 w-96 h-96 bg-primary-200 rounded-full blur-3xl opacity-30 animate-pulse" />
-        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-accent-200 rounded-full blur-3xl opacity-30 animate-pulse" style={{ animationDelay: '1s' }} />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-secondary-200 rounded-full blur-3xl opacity-20" />
+        <div className="absolute -top-40 -right-40 w-96 h-96 bg-primary-500/20 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-primary-500/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary-500/10 rounded-full blur-3xl" />
+        
+        {/* Grid Pattern with Green Glow */}
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(34,197,94,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(34,197,94,0.05)_1px,transparent_1px)] bg-[size:50px_50px]" />
       </div>
-      
-      {/* Grid Pattern Overlay */}
-      <div className="pointer-events-none fixed inset-0 bg-grid-light opacity-40" aria-hidden />
       
       {/* Content */}
       <div className="relative backdrop-blur-sm">

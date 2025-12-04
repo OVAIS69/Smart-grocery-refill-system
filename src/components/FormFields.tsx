@@ -11,20 +11,20 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className="w-full">
         {label && (
-          <label htmlFor={props.id} className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor={props.id} className="block text-sm font-medium text-primary-400 mb-2">
             {label}
-            {props.required && <span className="text-red-500 ml-1">*</span>}
+            {props.required && <span className="text-primary-500 ml-1">*</span>}
           </label>
         )}
         <input
           ref={ref}
-          className={cn('input', error && 'border-red-500 focus:ring-red-500', className)}
+          className={cn('input', error && 'border-danger focus:ring-danger', className)}
           aria-invalid={error ? 'true' : 'false'}
           aria-describedby={error ? `${props.id}-error` : undefined}
           {...props}
         />
         {error && (
-          <p id={`${props.id}-error`} className="mt-1 text-sm text-red-600" role="alert">
+          <p id={`${props.id}-error`} className="mt-1 text-sm text-danger glow-text" role="alert">
             {error}
           </p>
         )}
@@ -45,9 +45,9 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
     return (
       <div className="w-full">
         {label && (
-          <label htmlFor={props.id} className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor={props.id} className="block text-sm font-medium text-primary-400 mb-2">
             {label}
-            {props.required && <span className="text-red-500 ml-1">*</span>}
+            {props.required && <span className="text-primary-500 ml-1">*</span>}
           </label>
         )}
         <textarea
@@ -58,7 +58,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
           {...props}
         />
         {error && (
-          <p id={`${props.id}-error`} className="mt-1 text-sm text-red-600" role="alert">
+          <p id={`${props.id}-error`} className="mt-1 text-sm text-danger glow-text" role="alert">
             {error}
           </p>
         )}
@@ -80,26 +80,26 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
     return (
       <div className="w-full">
         {label && (
-          <label htmlFor={props.id} className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor={props.id} className="block text-sm font-medium text-primary-400 mb-2">
             {label}
-            {props.required && <span className="text-red-500 ml-1">*</span>}
+            {props.required && <span className="text-primary-500 ml-1">*</span>}
           </label>
         )}
         <select
           ref={ref}
-          className={cn('input', error && 'border-red-500 focus:ring-red-500', className)}
+          className={cn('input', error && 'border-danger focus:ring-danger', className)}
           aria-invalid={error ? 'true' : 'false'}
           aria-describedby={error ? `${props.id}-error` : undefined}
           {...props}
         >
           {options.map((option) => (
-            <option key={option.value} value={option.value}>
+            <option key={option.value} value={option.value} className="bg-dark-800 text-white">
               {option.label}
             </option>
           ))}
         </select>
         {error && (
-          <p id={`${props.id}-error`} className="mt-1 text-sm text-red-600" role="alert">
+          <p id={`${props.id}-error`} className="mt-1 text-sm text-danger glow-text" role="alert">
             {error}
           </p>
         )}
