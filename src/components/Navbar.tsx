@@ -11,17 +11,11 @@ interface NavbarProps {
 }
 
 export const Navbar = ({ onMenuClick }: NavbarProps) => {
-  const { user, logout, hasRole } = useAuthStore();
+  const { user } = useAuthStore();
   const navigate = useNavigate();
   const { data: notifications } = useNotifications();
   const unreadCount = notifications?.filter((n) => !n.read).length || 0;
   const [menuOpen, setMenuOpen] = useState(false);
-
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-    setMenuOpen(false);
-  };
 
   if (!user) return null;
 
