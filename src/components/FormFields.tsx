@@ -11,7 +11,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className="w-full">
         {label && (
-          <label htmlFor={props.id} className="block text-sm font-medium text-primary-400 mb-2">
+          <label htmlFor={props.id} className="block text-sm font-medium text-slate-700 mb-2">
             {label}
             {props.required && <span className="text-primary-500 ml-1">*</span>}
           </label>
@@ -24,7 +24,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           {...props}
         />
         {error && (
-          <p id={`${props.id}-error`} className="mt-1 text-sm text-danger glow-text" role="alert">
+          <p id={`${props.id}-error`} className="mt-1 text-sm text-danger" role="alert">
             {error}
           </p>
         )}
@@ -45,7 +45,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
     return (
       <div className="w-full">
         {label && (
-          <label htmlFor={props.id} className="block text-sm font-medium text-primary-400 mb-2">
+          <label htmlFor={props.id} className="block text-sm font-medium text-slate-700 mb-2">
             {label}
             {props.required && <span className="text-primary-500 ml-1">*</span>}
           </label>
@@ -58,7 +58,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
           {...props}
         />
         {error && (
-          <p id={`${props.id}-error`} className="mt-1 text-sm text-danger glow-text" role="alert">
+          <p id={`${props.id}-error`} className="mt-1 text-sm text-danger" role="alert">
             {error}
           </p>
         )}
@@ -80,7 +80,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
     return (
       <div className="w-full">
         {label && (
-          <label htmlFor={props.id} className="block text-sm font-medium text-primary-400 mb-2">
+          <label htmlFor={props.id} className="block text-sm font-medium text-slate-700 mb-2">
             {label}
             {props.required && <span className="text-primary-500 ml-1">*</span>}
           </label>
@@ -99,7 +99,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
           ))}
         </select>
         {error && (
-          <p id={`${props.id}-error`} className="mt-1 text-sm text-danger glow-text" role="alert">
+          <p id={`${props.id}-error`} className="mt-1 text-sm text-danger" role="alert">
             {error}
           </p>
         )}
