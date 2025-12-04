@@ -14,6 +14,7 @@ import { Admin } from '@/pages/Admin';
 import { Profile } from '@/pages/Profile';
 import { NotFound } from '@/pages/NotFound';
 import { About } from '@/pages/About';
+import { SupplierDashboard } from '@/pages/SupplierDashboard';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -63,6 +64,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/supplier"
+            element={
+              <ProtectedRoute allowedRoles={['supplier']}>
+                <SupplierDashboard />
               </ProtectedRoute>
             }
           />

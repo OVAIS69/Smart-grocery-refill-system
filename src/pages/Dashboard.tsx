@@ -1,7 +1,9 @@
-import { ReactNode } from 'react';
+import { ReactNode, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useProducts } from '@/hooks/useProducts';
 import { useOrders } from '@/hooks/useOrders';
 import { useNotifications } from '@/hooks/useNotifications';
+import { useAuthStore } from '@/store/authStore';
 import { isLowStock } from '@/utils/validators';
 import { Badge } from '@/components/Badge';
 import { Loading } from '@/components/Loading';
@@ -14,6 +16,15 @@ import {
 } from '@heroicons/react/24/outline';
 
 export const Dashboard = () => {
+  const { user } = useAuthStore();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Redirect suppliers to their dedicated dashboard
+    if (user?.role === 'supplier') {
+      navigate('/supplier', { replace: true });
+    }
+  }, [user, navigate]);
   const { data: productsData, isLoading: productsLoading } = useProducts({ limit: 10 });
   const { data: ordersData, isLoading: ordersLoading } = useOrders({ limit: 5 });
   const { data: notifications, isLoading: notificationsLoading } = useNotifications();

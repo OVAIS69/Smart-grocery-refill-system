@@ -25,6 +25,7 @@ export interface Product {
 }
 
 export type OrderStatus = 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled';
+export type PaymentStatus = 'unpaid' | 'paid' | 'partial';
 
 export interface Order {
   id: number;
@@ -32,6 +33,8 @@ export interface Order {
   product?: Product;
   quantity: number;
   status: OrderStatus;
+  paymentStatus?: PaymentStatus;
+  totalAmount?: number;
   supplierId?: number;
   supplier?: User;
   requestedBy?: number;
@@ -39,6 +42,7 @@ export interface Order {
   createdAt: string;
   updatedAt: string;
   expectedDeliveryDate?: string;
+  paidAt?: string;
 }
 
 export type NotificationType = 'LOW_STOCK' | 'ORDER_SHIPPED' | 'ORDER_DELIVERED' | 'SYSTEM';

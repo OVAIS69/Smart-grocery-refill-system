@@ -103,6 +103,8 @@ export const seedData = {
       productId: 2,
       quantity: 20,
       status: 'pending',
+      paymentStatus: 'unpaid',
+      totalAmount: 1600, // 20 * 80
       requestedBy: 2,
       supplierId: 3,
       createdAt: new Date(Date.now() - 86400000).toISOString(),
@@ -113,10 +115,38 @@ export const seedData = {
       productId: 3,
       quantity: 10,
       status: 'shipped',
+      paymentStatus: 'paid',
+      totalAmount: 1500, // 10 * 150
       requestedBy: 1,
       supplierId: 3,
+      paidAt: new Date(Date.now() - 86400000).toISOString(),
       createdAt: new Date(Date.now() - 172800000).toISOString(),
       updatedAt: new Date(Date.now() - 86400000).toISOString(),
+    },
+    {
+      id: 3,
+      productId: 1,
+      quantity: 5,
+      status: 'delivered',
+      paymentStatus: 'paid',
+      totalAmount: 2000, // 5 * 400
+      requestedBy: 2,
+      supplierId: 3,
+      paidAt: new Date(Date.now() - 172800000).toISOString(),
+      createdAt: new Date(Date.now() - 259200000).toISOString(),
+      updatedAt: new Date(Date.now() - 172800000).toISOString(),
+    },
+    {
+      id: 4,
+      productId: 4,
+      quantity: 15,
+      status: 'confirmed',
+      paymentStatus: 'partial',
+      totalAmount: 900, // 15 * 60
+      requestedBy: 1,
+      supplierId: 3,
+      createdAt: new Date(Date.now() - 43200000).toISOString(),
+      updatedAt: new Date(Date.now() - 43200000).toISOString(),
     },
   ],
   notifications: [

@@ -153,17 +153,21 @@ app.get('/api/orders/:id', authenticate, (req, res) => {
 });
 
 app.post('/api/orders', authenticate, (req, res) => {
+  const product = products.find((p) => p.id === req.body.productId);
+  const totalAmount = product ? product.price * (req.body.quantity || 1) : 0;
+  
   const newOrder = {
     id: orders.length + 1,
     ...req.body,
     status: 'pending',
+    paymentStatus: 'unpaid',
+    totalAmount,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   };
   orders.push(newOrder);
 
   // Create notification
-  const product = products.find((p) => p.id === req.body.productId);
   notifications.push({
     id: notifications.length + 1,
     type: 'LOW_STOCK',
@@ -182,9 +186,17 @@ app.put('/api/orders/:id', authenticate, (req, res) => {
   if (index === -1) {
     return res.status(404).json({ message: 'Order not found' });
   }
+  
+  const updateData = { ...req.body };
+  
+  // If payment status is being updated to 'paid', set paidAt timestamp
+  if (updateData.paymentStatus === 'paid' && orders[index].paymentStatus !== 'paid') {
+    updateData.paidAt = new Date().toISOString();
+  }
+  
   orders[index] = {
     ...orders[index],
-    ...req.body,
+    ...updateData,
     updatedAt: new Date().toISOString(),
   };
   res.json(orders[index]);

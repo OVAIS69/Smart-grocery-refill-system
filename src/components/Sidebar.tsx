@@ -8,10 +8,12 @@ import {
   ChartBarIcon,
   UserGroupIcon,
   UserIcon,
+  TruckIcon,
 } from '@heroicons/react/24/outline';
 
 const navigation = [
-  { name: 'Dashboard', href: '/', icon: HomeIcon, roles: ['admin', 'manager', 'supplier'] },
+  { name: 'Dashboard', href: '/', icon: HomeIcon, roles: ['admin', 'manager'] },
+  { name: 'Supplier Dashboard', href: '/supplier', icon: TruckIcon, roles: ['supplier'] },
   { name: 'Products', href: '/products', icon: CubeIcon, roles: ['admin', 'manager', 'supplier'] },
   { name: 'Orders', href: '/orders', icon: ShoppingCartIcon, roles: ['admin', 'manager', 'supplier'] },
   { name: 'Notifications', href: '/notifications', icon: BellIcon, roles: ['admin', 'manager', 'supplier'] },

@@ -8,6 +8,7 @@ import { Modal } from '@/components/Modal';
 import { Select } from '@/components/FormFields';
 import { Loading } from '@/components/Loading';
 import { formatDate } from '@/utils';
+import { formatCurrency } from '@/utils/currency';
 import { useToast } from '@/contexts/useToast';
 import type { Order } from '@/types';
 import { getErrorMessage } from '@/utils';
@@ -19,6 +20,7 @@ export const Orders = () => {
   const [statusFilter, setStatusFilter] = useState<Order['status'] | ''>('');
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
 
   const { data, isLoading, refetch } = useOrders({
     page,
@@ -39,6 +41,22 @@ export const Orders = () => {
       refetch();
     } catch (error) {
       showError(getErrorMessage(error, 'Failed to update order status'));
+    }
+  };
+
+  const handlePaymentUpdate = async (paymentStatus: Order['paymentStatus']) => {
+    if (!selectedOrder) return;
+    try {
+      await updateStatus.mutateAsync({ 
+        id: selectedOrder.id, 
+        paymentStatus: paymentStatus as 'paid' | 'unpaid' | 'partial'
+      });
+      success('Payment status updated successfully');
+      setIsPaymentModalOpen(false);
+      setSelectedOrder(null);
+      refetch();
+    } catch (error) {
+      showError(getErrorMessage(error, 'Failed to update payment status'));
     }
   };
 
@@ -71,6 +89,44 @@ export const Orders = () => {
     {
       header: 'Status',
       accessor: (row: Order) => <Badge variant={getStatusVariant(row.status)}>{row.status}</Badge>,
+    },
+    {
+      header: 'Payment',
+      accessor: (row: Order) => (
+        <div className="flex items-center gap-2">
+          <Badge
+            variant={
+              row.paymentStatus === 'paid'
+                ? 'success'
+                : row.paymentStatus === 'unpaid'
+                ? 'danger'
+                : 'warning'
+            }
+          >
+            {row.paymentStatus || 'unpaid'}
+          </Badge>
+          {hasRole(['admin', 'supplier']) && row.paymentStatus !== 'paid' && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setSelectedOrder(row);
+                setIsPaymentModalOpen(true);
+              }}
+              className="text-xs text-primary-600 hover:text-primary-700 underline"
+            >
+              Update
+            </button>
+          )}
+        </div>
+      ),
+    },
+    {
+      header: 'Amount',
+      accessor: (row: Order) => (
+        <span className="font-semibold text-neutral-900">
+          {row.totalAmount ? `$${row.totalAmount.toFixed(2)}` : 'N/A'}
+        </span>
+      ),
     },
     {
       header: 'Requested By',
@@ -188,6 +244,45 @@ export const Orders = () => {
                       updateStatus.isPending ||
                       status === selectedOrder.status ||
                       (selectedOrder.status === 'delivered' && status !== 'delivered')
+                    }
+                    className="btn btn-secondary text-sm disabled:opacity-50"
+                  >
+                    {status}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      <Modal
+        isOpen={isPaymentModalOpen}
+        onClose={() => {
+          setIsPaymentModalOpen(false);
+          setSelectedOrder(null);
+        }}
+        title="Update Payment Status"
+      >
+        {selectedOrder && (
+          <div className="space-y-4">
+            <div className="rounded-2xl border border-neutral-100 bg-neutral-50/60 p-4">
+              <p className="text-sm text-neutral-500">Order #{selectedOrder.id}</p>
+              <p className="text-lg font-semibold text-neutral-900">{selectedOrder.product?.name}</p>
+              <p className="text-sm text-neutral-600 mt-2">
+                Amount: <span className="font-semibold">{formatCurrency(selectedOrder.totalAmount || 0)}</span>
+              </p>
+            </div>
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-neutral-700">Select payment status</p>
+              <div className="grid grid-cols-3 gap-3">
+                {(['unpaid', 'partial', 'paid'] as Order['paymentStatus'][]).map((status) => (
+                  <button
+                    key={status}
+                    onClick={() => handlePaymentUpdate(status)}
+                    disabled={
+                      updateStatus.isPending ||
+                      status === selectedOrder.paymentStatus
                     }
                     className="btn btn-secondary text-sm disabled:opacity-50"
                   >
