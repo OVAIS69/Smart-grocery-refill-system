@@ -2,7 +2,6 @@ import { Navbar } from './Navbar';
 import { Sidebar } from './Sidebar';
 import { ToastContainer } from './Toast';
 import { useToast } from '@/contexts/useToast';
-import { Footer } from './Footer';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -23,7 +22,6 @@ export const Layout = ({ children }: LayoutProps) => {
           </main>
         </div>
       </div>
-      <Footer />
       <ToastContainer toasts={toasts} onClose={removeToast} />
     </div>
   );
