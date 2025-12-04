@@ -4,6 +4,7 @@ import { BellIcon, UserCircleIcon, Bars3Icon, XMarkIcon } from '@heroicons/react
 import { useAuthStore } from '@/store/authStore';
 import { useNotifications } from '@/hooks/useNotifications';
 import { Badge } from './Badge';
+import { GlobalSearch } from './GlobalSearch';
 
 
 interface NavbarProps {
@@ -22,16 +23,19 @@ export const Navbar = ({ onMenuClick }: NavbarProps) => {
   return (
     <nav className="relative border-b-2 border-primary-100 bg-white/80 backdrop-blur-xl shadow-lg" role="navigation" aria-label="Main navigation">
       <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center gap-4">
-          <Link to="/" className="flex items-center gap-2 group">
+        <div className="flex items-center gap-4 flex-1">
+          <Link to="/" className="flex items-center gap-2 group flex-shrink-0">
             <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-500 to-secondary-500 text-white text-lg font-bold shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105">
               SG
             </div>
-            <div>
+            <div className="hidden sm:block">
               <p className="text-sm uppercase tracking-widest text-slate-500">Smart Grocery</p>
               <p className="text-lg font-semibold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent">Refill HQ</p>
             </div>
           </Link>
+          <div className="hidden md:block flex-1 max-w-2xl mx-4">
+            <GlobalSearch />
+          </div>
         </div>
         <div className="flex items-center gap-3">
           <button

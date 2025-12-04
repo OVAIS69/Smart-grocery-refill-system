@@ -105,3 +105,37 @@ export interface ApiError {
   errors?: Record<string, string[]>;
 }
 
+export interface UserSettings {
+  id?: number;
+  userId: number;
+  // Notification Preferences
+  emailNotifications: boolean;
+  smsNotifications: boolean;
+  lowStockAlerts: boolean;
+  orderUpdates: boolean;
+  paymentReminders: boolean;
+  // Auto-refill Configuration
+  autoRefillEnabled: boolean;
+  autoRefillInterval: number; // in seconds
+  autoRefillQuantityMultiplier: number; // multiplier for threshold
+  // User Preferences
+  theme: 'light' | 'dark' | 'auto';
+  language: string;
+  dateFormat: string;
+  timeFormat: '12h' | '24h';
+  itemsPerPage: number;
+  // Search History
+  searchHistory: string[];
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface GlobalSearchResult {
+  type: 'product' | 'order' | 'user' | 'notification';
+  id: number;
+  title: string;
+  description?: string;
+  url: string;
+  metadata?: Record<string, any>;
+}
+

@@ -13,6 +13,7 @@ let users = [...seedData.users];
 let products = [...seedData.products];
 let orders = [...seedData.orders];
 let notifications = [...seedData.notifications];
+let settings = [];
 
 // Auth middleware (simple token check)
 const authenticate = (req, res, next) => {
@@ -269,6 +270,129 @@ app.delete('/api/users/:id', authenticate, (req, res) => {
   }
   users.splice(index, 1);
   res.status(204).send();
+});
+
+// Settings routes
+app.get('/api/settings/:userId', authenticate, (req, res) => {
+  const userId = parseInt(req.params.userId);
+  let userSettings = settings.find((s) => s.userId === userId);
+  
+  if (!userSettings) {
+    // Create default settings
+    userSettings = {
+      id: settings.length + 1,
+      userId,
+      emailNotifications: true,
+      smsNotifications: false,
+      lowStockAlerts: true,
+      orderUpdates: true,
+      paymentReminders: true,
+      autoRefillEnabled: false,
+      autoRefillInterval: 30,
+      autoRefillQuantityMultiplier: 2,
+      theme: 'light',
+      language: 'en',
+      dateFormat: 'MM/dd/yyyy',
+      timeFormat: '12h',
+      itemsPerPage: 10,
+      searchHistory: [],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    settings.push(userSettings);
+  }
+  
+  res.json(userSettings);
+});
+
+app.put('/api/settings/:userId', authenticate, (req, res) => {
+  const userId = parseInt(req.params.userId);
+  const index = settings.findIndex((s) => s.userId === userId);
+  
+  if (index === -1) {
+    // Create new settings
+    const newSettings = {
+      id: settings.length + 1,
+      userId,
+      ...req.body,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    settings.push(newSettings);
+    res.json(newSettings);
+  } else {
+    settings[index] = {
+      ...settings[index],
+      ...req.body,
+      updatedAt: new Date().toISOString(),
+    };
+    res.json(settings[index]);
+  }
+});
+
+// Global search route
+app.get('/api/search', authenticate, (req, res) => {
+  const { q } = req.query;
+  if (!q || q.length < 2) {
+    return res.json([]);
+  }
+
+  const query = q.toLowerCase();
+  const results = [];
+
+  // Search products
+  products.forEach((product) => {
+    if (
+      product.name.toLowerCase().includes(query) ||
+      product.description?.toLowerCase().includes(query) ||
+      product.sku?.toLowerCase().includes(query) ||
+      product.category.toLowerCase().includes(query)
+    ) {
+      results.push({
+        type: 'product',
+        id: product.id,
+        title: product.name,
+        description: `${product.category} • Stock: ${product.stock}`,
+        url: `/products?q=${encodeURIComponent(q)}`,
+        metadata: { category: product.category, stock: product.stock },
+      });
+    }
+  });
+
+  // Search orders
+  orders.forEach((order) => {
+    const product = products.find((p) => p.id === order.productId);
+    if (product && product.name.toLowerCase().includes(query)) {
+      results.push({
+        type: 'order',
+        id: order.id,
+        title: `Order #${order.id}`,
+        description: `${product.name} • ${order.quantity} units • ${order.status}`,
+        url: `/orders?q=${encodeURIComponent(q)}`,
+        metadata: { status: order.status, quantity: order.quantity },
+      });
+    }
+  });
+
+  // Search users (admin only)
+  users.forEach((user) => {
+    if (
+      user.name.toLowerCase().includes(query) ||
+      user.email.toLowerCase().includes(query)
+    ) {
+      results.push({
+        type: 'user',
+        id: user.id,
+        title: user.name,
+        description: `${user.email} • ${user.role}`,
+        url: `/admin`,
+        metadata: { role: user.role, email: user.email },
+      });
+    }
+  });
+
+  // Limit results
+  res.json(results.slice(0, 10));
 });
 
 // Dev endpoint to adjust stock (for demo/testing)

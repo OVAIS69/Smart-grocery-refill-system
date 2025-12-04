@@ -15,6 +15,7 @@ import { Profile } from '@/pages/Profile';
 import { NotFound } from '@/pages/NotFound';
 import { About } from '@/pages/About';
 import { SupplierDashboard } from '@/pages/SupplierDashboard';
+import { Settings } from '@/pages/Settings';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -120,6 +121,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <Profile />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <ProtectedRoute>
+                <Settings />
               </ProtectedRoute>
             }
           />

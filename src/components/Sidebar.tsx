@@ -10,6 +10,7 @@ import {
   UserGroupIcon,
   UserIcon,
   TruckIcon,
+  Cog6ToothIcon,
 } from '@heroicons/react/24/outline';
 
 const navigation = [
@@ -20,6 +21,7 @@ const navigation = [
   { name: 'Notifications', href: '/notifications', icon: BellIcon, roles: ['admin', 'manager', 'supplier'] },
   { name: 'Reports', href: '/reports', icon: ChartBarIcon, roles: ['admin', 'manager'] },
   { name: 'Admin', href: '/admin', icon: UserGroupIcon, roles: ['admin'] },
+  { name: 'Settings', href: '/settings', icon: Cog6ToothIcon, roles: ['admin', 'manager', 'supplier'] },
   { name: 'Profile', href: '/profile', icon: UserIcon, roles: ['admin', 'manager', 'supplier'] },
 ];
 

@@ -7,6 +7,7 @@ import {
   BellIcon,
   UserIcon,
   TruckIcon,
+  Cog6ToothIcon,
 } from '@heroicons/react/24/outline';
 
 const mobileNav = [
@@ -15,7 +16,7 @@ const mobileNav = [
   { name: 'Products', href: '/products', icon: CubeIcon, roles: ['admin', 'manager', 'supplier'] },
   { name: 'Orders', href: '/orders', icon: ShoppingCartIcon, roles: ['admin', 'manager', 'supplier'] },
   { name: 'Notifications', href: '/notifications', icon: BellIcon, roles: ['admin', 'manager', 'supplier'] },
-  { name: 'Profile', href: '/profile', icon: UserIcon, roles: ['admin', 'manager', 'supplier'] },
+  { name: 'Settings', href: '/settings', icon: Cog6ToothIcon, roles: ['admin', 'manager', 'supplier'] },
 ];
 
 export const MobileNav = () => {
