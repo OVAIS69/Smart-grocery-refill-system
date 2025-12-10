@@ -130,6 +130,28 @@ export interface UserSettings {
   updatedAt?: string;
 }
 
+export interface MessageThread {
+  id: string;
+  managerId: number;
+  managerName: string;
+  supplierId: number;
+  supplierName: string;
+  topic?: string;
+  createdAt: string;
+}
+
+export interface Message {
+  id: string;
+  threadId: string;
+  fromUserId: number;
+  fromRole: UserRole;
+  toUserId: number;
+  toRole: UserRole;
+  body: string;
+  createdAt: string;
+  readBy: number[];
+}
+
 export interface GlobalSearchResult {
   type: 'product' | 'order' | 'user' | 'notification';
   id: number;

@@ -3,31 +3,116 @@ import { useSettings } from '@/hooks/useSettings';
 import { Input, Select } from '@/components/FormFields';
 import { Loading } from '@/components/Loading';
 import { useToast } from '@/contexts/useToast';
+import { useAuthStore } from '@/store/authStore';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import apiClient from '@/services/api';
+import { getErrorMessage } from '@/utils';
 import {
-  BellIcon,
   UserCircleIcon,
-  MagnifyingGlassIcon,
-  ArrowPathIcon,
+  KeyIcon,
 } from '@heroicons/react/24/outline';
 
+const credentialsSchema = z.object({
+  currentPassword: z.string().min(1, 'Current password is required'),
+  newEmail: z.string().email('Invalid email').optional().or(z.literal('')),
+  newPassword: z.string().min(6, 'Password must be at least 6 characters').optional().or(z.literal('')),
+  confirmPassword: z.string().optional(),
+}).refine((data) => {
+  // If new password is provided, confirm password must match
+  if (data.newPassword && data.newPassword.length > 0) {
+    return data.newPassword === data.confirmPassword;
+  }
+  return true;
+}, {
+  message: 'Passwords do not match',
+  path: ['confirmPassword'],
+});
+
+type CredentialsFormData = z.infer<typeof credentialsSchema>;
+
 export const Settings = () => {
+  const { user, hasRole } = useAuthStore();
   const { settings, isLoading, updateSettings, isUpdating } = useSettings();
-  const { success } = useToast();
-  const [activeTab, setActiveTab] = useState<'preferences' | 'notifications' | 'autorefill' | 'search'>('preferences');
+  const { success, error: showError } = useToast();
+  const [activeTab, setActiveTab] = useState<'preferences' | 'credentials'>('preferences');
+  const isAdmin = hasRole(['admin']);
+
+  const {
+    register: registerCredentials,
+    handleSubmit: handleCredentialsSubmit,
+    formState: { errors: credentialsErrors, isSubmitting: isUpdatingCredentials },
+    reset: resetCredentials,
+  } = useForm<CredentialsFormData>({
+    resolver: zodResolver(credentialsSchema),
+  });
 
   if (isLoading || !settings) {
     return <Loading />;
   }
 
-  const handleSave = async (section: string, data: Partial<typeof settings>) => {
+  const handlePreferencesSave = async (data: Partial<typeof settings>) => {
     await updateSettings(data);
+  };
+
+  const handleCredentialsUpdate = async (data: CredentialsFormData) => {
+    if (!user?.id) {
+      showError('User not found');
+      return;
+    }
+
+    try {
+      // Verify current password by attempting login
+      try {
+        const loginResponse = await apiClient.post('/auth/login', {
+          email: user.email,
+          password: data.currentPassword,
+        });
+
+        if (!loginResponse.data || !loginResponse.data.token) {
+          showError('Current password is incorrect');
+          return;
+        }
+      } catch (loginError: any) {
+        if (loginError.response?.status === 401) {
+          showError('Current password is incorrect');
+          return;
+        }
+        throw loginError;
+      }
+
+      // Update user credentials
+      const updateData: { email?: string; password?: string } = {};
+      if (data.newEmail && data.newEmail.trim() !== '') {
+        updateData.email = data.newEmail;
+      }
+      if (data.newPassword && data.newPassword.trim() !== '') {
+        updateData.password = data.newPassword;
+      }
+
+      if (Object.keys(updateData).length === 0) {
+        showError('Please provide at least one field to update');
+        return;
+      }
+
+      await apiClient.put(`/users/${user.id}`, updateData);
+      success('Credentials updated successfully. Please login again.');
+      resetCredentials();
+      
+      // Update local user data if email changed
+      if (updateData.email) {
+        const updatedUser = { ...user, email: updateData.email };
+        localStorage.setItem('sg_user', JSON.stringify(updatedUser));
+      }
+    } catch (error: any) {
+      showError(getErrorMessage(error, 'Failed to update credentials'));
+    }
   };
 
   const tabs = [
     { id: 'preferences', label: 'Preferences', icon: UserCircleIcon },
-    { id: 'notifications', label: 'Notifications', icon: BellIcon },
-    { id: 'autorefill', label: 'Auto-Refill', icon: ArrowPathIcon },
-    { id: 'search', label: 'Search', icon: MagnifyingGlassIcon },
+    ...(isAdmin ? [{ id: 'credentials', label: 'Credentials', icon: KeyIcon }] : []),
   ];
 
   return (
@@ -48,7 +133,7 @@ export const Settings = () => {
                 return (
                   <button
                     key={tab.id}
-                    onClick={() => setActiveTab(tab.id as any)}
+                    onClick={() => setActiveTab(tab.id as 'preferences' | 'credentials')}
                     className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
                       isActive
                         ? 'bg-gradient-to-r from-primary-500 to-primary-600 text-white shadow-lg'
@@ -69,22 +154,19 @@ export const Settings = () => {
           <div className="card">
             {/* User Preferences */}
             {activeTab === 'preferences' && (
-              <PreferencesSection settings={settings} onSave={handleSave} isUpdating={isUpdating} />
+              <PreferencesSection settings={settings} onSave={handlePreferencesSave} isUpdating={isUpdating} />
             )}
 
-            {/* Notification Preferences */}
-            {activeTab === 'notifications' && (
-              <NotificationsSection settings={settings} onSave={handleSave} isUpdating={isUpdating} />
-            )}
-
-            {/* Auto-Refill Configuration */}
-            {activeTab === 'autorefill' && (
-              <AutoRefillSection settings={settings} onSave={handleSave} isUpdating={isUpdating} />
-            )}
-
-            {/* Search Settings */}
-            {activeTab === 'search' && (
-              <SearchSection settings={settings} onSave={handleSave} isUpdating={isUpdating} />
+            {/* Credentials Section (Admin Only) */}
+            {activeTab === 'credentials' && isAdmin && (
+              <CredentialsSection
+                currentEmail={user?.email || ''}
+                onSubmit={handleCredentialsSubmit(handleCredentialsUpdate)}
+                register={registerCredentials}
+                errors={credentialsErrors}
+                isSubmitting={isUpdatingCredentials}
+                onReset={resetCredentials}
+              />
             )}
           </div>
         </div>
@@ -93,13 +175,13 @@ export const Settings = () => {
   );
 };
 
-interface SectionProps {
+interface PreferencesSectionProps {
   settings: any;
-  onSave: (section: string, data: any) => Promise<void>;
+  onSave: (data: any) => Promise<void>;
   isUpdating: boolean;
 }
 
-const PreferencesSection = ({ settings, onSave, isUpdating }: SectionProps) => {
+const PreferencesSection = ({ settings, onSave, isUpdating }: PreferencesSectionProps) => {
   const [formData, setFormData] = useState({
     theme: settings.theme || 'light',
     language: settings.language || 'en',
@@ -110,7 +192,7 @@ const PreferencesSection = ({ settings, onSave, isUpdating }: SectionProps) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await onSave('preferences', formData);
+    await onSave(formData);
   };
 
   return (
@@ -183,249 +265,90 @@ const PreferencesSection = ({ settings, onSave, isUpdating }: SectionProps) => {
   );
 };
 
-const NotificationsSection = ({ settings, onSave, isUpdating }: SectionProps) => {
-  const [formData, setFormData] = useState({
-    emailNotifications: settings.emailNotifications ?? true,
-    smsNotifications: settings.smsNotifications ?? false,
-    lowStockAlerts: settings.lowStockAlerts ?? true,
-    orderUpdates: settings.orderUpdates ?? true,
-    paymentReminders: settings.paymentReminders ?? true,
-  });
+interface CredentialsSectionProps {
+  currentEmail: string;
+  onSubmit: (e?: React.BaseSyntheticEvent) => Promise<void>;
+  register: any;
+  errors: any;
+  isSubmitting: boolean;
+  onReset: () => void;
+}
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    await onSave('notifications', formData);
-  };
-
-  const toggleSetting = (key: keyof typeof formData) => {
-    setFormData({ ...formData, [key]: !formData[key] });
-  };
-
+const CredentialsSection = ({
+  currentEmail,
+  onSubmit,
+  register,
+  errors,
+  isSubmitting,
+  onReset,
+}: CredentialsSectionProps) => {
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={onSubmit} className="space-y-6">
       <div>
-        <h2 className="text-xl font-semibold text-slate-900 mb-1">Notification Preferences</h2>
-        <p className="text-sm text-slate-500">Choose how you want to be notified</p>
+        <h2 className="text-xl font-semibold text-slate-900 mb-1">Update Credentials</h2>
+        <p className="text-sm text-slate-500">Change your login email and password</p>
       </div>
 
       <div className="space-y-4">
-        <div className="flex items-center justify-between p-4 rounded-xl border-2 border-primary-100 bg-primary-50/50">
-          <div>
-            <p className="font-medium text-slate-900">Email Notifications</p>
-            <p className="text-sm text-slate-500">Receive notifications via email</p>
-          </div>
-          <label className="relative inline-flex items-center cursor-pointer">
-            <input
-              type="checkbox"
-              checked={formData.emailNotifications}
-              onChange={() => toggleSetting('emailNotifications')}
-              className="sr-only peer"
-            />
-            <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
-          </label>
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-2">Current Email</label>
+          <input
+            type="email"
+            value={currentEmail}
+            disabled
+            className="input bg-slate-100 cursor-not-allowed"
+            readOnly
+          />
+          <p className="mt-1 text-xs text-slate-500">Your current email address</p>
         </div>
 
-        <div className="flex items-center justify-between p-4 rounded-xl border-2 border-slate-200 bg-white">
-          <div>
-            <p className="font-medium text-slate-900">SMS Notifications</p>
-            <p className="text-sm text-slate-500">Receive notifications via SMS</p>
-          </div>
-          <label className="relative inline-flex items-center cursor-pointer">
-            <input
-              type="checkbox"
-              checked={formData.smsNotifications}
-              onChange={() => toggleSetting('smsNotifications')}
-              className="sr-only peer"
-            />
-            <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
-          </label>
-        </div>
+        <Input
+          {...register('newEmail')}
+          type="email"
+          label="New Email (Optional)"
+          placeholder="Enter new email address"
+          error={errors.newEmail?.message}
+        />
 
-        <div className="flex items-center justify-between p-4 rounded-xl border-2 border-slate-200 bg-white">
-          <div>
-            <p className="font-medium text-slate-900">Low Stock Alerts</p>
-            <p className="text-sm text-slate-500">Get notified when products are low in stock</p>
-          </div>
-          <label className="relative inline-flex items-center cursor-pointer">
-            <input
-              type="checkbox"
-              checked={formData.lowStockAlerts}
-              onChange={() => toggleSetting('lowStockAlerts')}
-              className="sr-only peer"
-            />
-            <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
-          </label>
-        </div>
+        <Input
+          {...register('currentPassword')}
+          type="password"
+          label="Current Password"
+          placeholder="Enter your current password"
+          error={errors.currentPassword?.message}
+          required
+        />
 
-        <div className="flex items-center justify-between p-4 rounded-xl border-2 border-slate-200 bg-white">
-          <div>
-            <p className="font-medium text-slate-900">Order Updates</p>
-            <p className="text-sm text-slate-500">Receive notifications for order status changes</p>
-          </div>
-          <label className="relative inline-flex items-center cursor-pointer">
-            <input
-              type="checkbox"
-              checked={formData.orderUpdates}
-              onChange={() => toggleSetting('orderUpdates')}
-              className="sr-only peer"
-            />
-            <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
-          </label>
-        </div>
+        <Input
+          {...register('newPassword')}
+          type="password"
+          label="New Password (Optional)"
+          placeholder="Enter new password (min 6 characters)"
+          error={errors.newPassword?.message}
+        />
 
-        <div className="flex items-center justify-between p-4 rounded-xl border-2 border-slate-200 bg-white">
-          <div>
-            <p className="font-medium text-slate-900">Payment Reminders</p>
-            <p className="text-sm text-slate-500">Get reminded about unpaid orders</p>
-          </div>
-          <label className="relative inline-flex items-center cursor-pointer">
-            <input
-              type="checkbox"
-              checked={formData.paymentReminders}
-              onChange={() => toggleSetting('paymentReminders')}
-              className="sr-only peer"
-            />
-            <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
-          </label>
-        </div>
+        <Input
+          {...register('confirmPassword')}
+          type="password"
+          label="Confirm New Password"
+          placeholder="Confirm your new password"
+          error={errors.confirmPassword?.message}
+        />
       </div>
 
-      <div className="flex justify-end pt-4 border-t-2 border-primary-100">
-        <button type="submit" disabled={isUpdating} className="btn btn-primary">
-          {isUpdating ? 'Saving...' : 'Save Notification Settings'}
+      <div className="flex justify-end gap-3 pt-4 border-t-2 border-primary-100">
+        <button
+          type="button"
+          onClick={onReset}
+          className="btn btn-secondary"
+          disabled={isSubmitting}
+        >
+          Reset
+        </button>
+        <button type="submit" disabled={isSubmitting} className="btn btn-primary">
+          {isSubmitting ? 'Updating...' : 'Update Credentials'}
         </button>
       </div>
     </form>
   );
 };
-
-const AutoRefillSection = ({ settings, onSave, isUpdating }: SectionProps) => {
-  const [formData, setFormData] = useState({
-    autoRefillEnabled: settings.autoRefillEnabled ?? false,
-    autoRefillInterval: settings.autoRefillInterval ?? 30,
-    autoRefillQuantityMultiplier: settings.autoRefillQuantityMultiplier ?? 2,
-  });
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    await onSave('autorefill', formData);
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div>
-        <h2 className="text-xl font-semibold text-slate-900 mb-1">Auto-Refill Configuration</h2>
-        <p className="text-sm text-slate-500">Configure automatic inventory refill settings</p>
-      </div>
-
-      <div className="space-y-4">
-        <div className="flex items-center justify-between p-4 rounded-xl border-2 border-primary-100 bg-primary-50/50">
-          <div>
-            <p className="font-medium text-slate-900">Enable Auto-Refill</p>
-            <p className="text-sm text-slate-500">Automatically create orders when stock is low</p>
-          </div>
-          <label className="relative inline-flex items-center cursor-pointer">
-            <input
-              type="checkbox"
-              checked={formData.autoRefillEnabled}
-              onChange={(e) => setFormData({ ...formData, autoRefillEnabled: e.target.checked })}
-              className="sr-only peer"
-            />
-            <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
-          </label>
-        </div>
-
-        {formData.autoRefillEnabled && (
-          <>
-            <div>
-              <Input
-                type="number"
-                label="Check Interval (seconds)"
-                value={formData.autoRefillInterval.toString()}
-                onChange={(e) => setFormData({ ...formData, autoRefillInterval: parseInt(e.target.value) || 30 })}
-                min="10"
-                max="300"
-              />
-              <p className="mt-1 text-xs text-slate-500">How often to check for low stock (10-300 seconds)</p>
-            </div>
-
-            <div>
-              <Input
-                type="number"
-                label="Quantity Multiplier"
-                value={formData.autoRefillQuantityMultiplier.toString()}
-                onChange={(e) =>
-                  setFormData({ ...formData, autoRefillQuantityMultiplier: parseFloat(e.target.value) || 2 })
-                }
-                step="0.1"
-                min="1"
-                max="10"
-              />
-              <p className="mt-1 text-xs text-slate-500">Order quantity = threshold × multiplier</p>
-            </div>
-          </>
-        )}
-      </div>
-
-      <div className="flex justify-end pt-4 border-t-2 border-primary-100">
-        <button type="submit" disabled={isUpdating} className="btn btn-primary">
-          {isUpdating ? 'Saving...' : 'Save Auto-Refill Settings'}
-        </button>
-      </div>
-    </form>
-  );
-};
-
-const SearchSection = ({ settings, onSave, isUpdating }: SectionProps) => {
-  const { settingsService } = require('@/services/settings');
-  const searchHistory = settingsService.getSearchHistory();
-
-  const handleClearHistory = () => {
-    settingsService.clearSearchHistory();
-    window.location.reload();
-  };
-
-  return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-xl font-semibold text-slate-900 mb-1">Search Settings</h2>
-        <p className="text-sm text-slate-500">Manage your search history and preferences</p>
-      </div>
-
-      <div className="space-y-4">
-        <div className="p-4 rounded-xl border-2 border-primary-100 bg-primary-50/50">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <p className="font-medium text-slate-900">Search History</p>
-              <p className="text-sm text-slate-500">
-                {searchHistory.length} recent {searchHistory.length === 1 ? 'search' : 'searches'}
-              </p>
-            </div>
-            {searchHistory.length > 0 && (
-              <button onClick={handleClearHistory} className="btn btn-secondary text-sm">
-                Clear History
-              </button>
-            )}
-          </div>
-
-          {searchHistory.length > 0 ? (
-            <div className="space-y-2">
-              {searchHistory.map((item: string, idx: number) => (
-                <div
-                  key={idx}
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white border border-slate-200 text-sm text-slate-600"
-                >
-                  <span className="text-slate-400">•</span>
-                  {item}
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-sm text-slate-500 text-center py-4">No search history yet</p>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-};
-

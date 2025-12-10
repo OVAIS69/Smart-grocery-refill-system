@@ -1,29 +1,47 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { BellIcon, UserCircleIcon, Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { BellIcon, UserCircleIcon, Bars3Icon, XMarkIcon, ArrowRightOnRectangleIcon } from '@heroicons/react/24/outline';
 import { useAuthStore } from '@/store/authStore';
 import { useNotifications } from '@/hooks/useNotifications';
 import { Badge } from './Badge';
-import { GlobalSearch } from './GlobalSearch';
-
 
 interface NavbarProps {
   onMenuClick?: () => void;
 }
 
+const navigation = [
+  { name: 'Dashboard', href: '/', roles: ['admin', 'manager', 'supplier'] },
+  { name: 'Messages', href: '/messages', roles: ['admin', 'manager', 'supplier'] },
+  { name: 'Products', href: '/products', roles: ['admin', 'manager', 'supplier'] },
+  { name: 'Orders', href: '/orders', roles: ['admin', 'manager', 'supplier'] },
+  { name: 'Notifications', href: '/notifications', roles: ['admin', 'manager', 'supplier'] },
+  { name: 'Settings', href: '/settings', roles: ['admin', 'manager', 'supplier'] },
+  { name: 'Reports', href: '/reports', roles: ['admin', 'manager'] },
+  { name: 'About', href: '/about', roles: ['admin', 'manager', 'supplier'] },
+];
+
 export const Navbar = ({ onMenuClick }: NavbarProps) => {
-  const { user } = useAuthStore();
+  const { user, logout, hasRole } = useAuthStore();
   const navigate = useNavigate();
+  const location = useLocation();
   const { data: notifications } = useNotifications();
   const unreadCount = notifications?.filter((n) => !n.read).length || 0;
   const [menuOpen, setMenuOpen] = useState(false);
 
   if (!user) return null;
 
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
+  const filteredNav = navigation.filter((item) => hasRole(item.roles));
+
   return (
-    <nav className="relative border-b-2 border-primary-100 bg-white/80 backdrop-blur-xl shadow-lg" role="navigation" aria-label="Main navigation">
+    <nav className="sticky top-0 z-50 border-b-2 border-primary-100 bg-white/80 backdrop-blur-xl shadow-lg" role="navigation" aria-label="Main navigation">
       <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center gap-4 flex-1">
+        {/* Left: Branding */}
+        <div className="flex items-center gap-4 flex-shrink-0">
           <Link to="/" className="flex items-center gap-2 group flex-shrink-0">
             <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-500 to-secondary-500 text-white text-lg font-bold shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105">
               SG
@@ -33,11 +51,31 @@ export const Navbar = ({ onMenuClick }: NavbarProps) => {
               <p className="text-lg font-semibold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent">Refill HQ</p>
             </div>
           </Link>
-          <div className="hidden md:block flex-1 max-w-2xl mx-4">
-            <GlobalSearch />
-          </div>
         </div>
-        <div className="flex items-center gap-3">
+
+        {/* Center: Navigation Links */}
+        <nav className="hidden lg:flex items-center gap-1 flex-1 justify-center mx-8" aria-label="Primary navigation">
+          {filteredNav.map((item) => {
+            const isActive = location.pathname === item.href || (item.href === '/' && location.pathname === '/');
+            return (
+              <Link
+                key={item.name}
+                to={item.href}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                  isActive
+                    ? 'text-primary-600 bg-primary-50'
+                    : 'text-slate-600 hover:text-primary-600 hover:bg-primary-50/50'
+                }`}
+                aria-current={isActive ? 'page' : undefined}
+              >
+                {item.name}
+              </Link>
+            );
+          })}
+        </nav>
+
+        {/* Right: User Controls */}
+        <div className="flex items-center gap-3 flex-shrink-0">
           <button
             className="relative rounded-full p-2 text-slate-600 transition hover:bg-primary-50 hover:text-primary-600"
             aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ''}`}
@@ -63,6 +101,14 @@ export const Navbar = ({ onMenuClick }: NavbarProps) => {
               {user.role}
             </Badge>
           </div>
+          <button
+            onClick={handleLogout}
+            className="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-full border-2 border-primary-200 bg-primary-50 text-primary-700 text-sm font-medium transition hover:bg-primary-100 hover:border-primary-300"
+            aria-label="Logout"
+          >
+            <ArrowRightOnRectangleIcon className="h-4 w-4" />
+            Logout
+          </button>
           <button
             className="inline-flex rounded-full p-2 text-slate-600 transition hover:bg-primary-50 lg:hidden"
             onClick={() => {
